@@ -15,21 +15,14 @@ MIN_SPEED = 1.0
 MAX_SPEED = 3.0
 MIN_CIRCLES = 3
 MAX_CIRCLES = 7
-MAX_TOTAL_CIRCLES = 50
-MAX_SCORE = 20
+MAX_TOTAL_CIRCLES = 50  # Максимум кружков на экране
+MAX_SCORE = 20  # Победа после 20 лопнутых кружков
 
 class Circle:
-    # Класс одного кружочка
     def __init__(self):
-        # Случайный радиус
+        # Случайные параметры кружочка
         self.radius = random.randint(15, 35)
-        # Случайный цвет
-        self.color = (
-            random.randint(100, 255),
-            random.randint(100, 255),
-            random.randint(100, 255)
-        )
-        # Случайная позиция
+        self.color = (random.randint(100, 255), random.randint(100, 255), random.randint(100, 255))
         self.x = random.randint(self.radius, WIDTH - self.radius)
         self.y = random.randint(self.radius, HEIGHT - self.radius)
         # Случайная скорость и направление
@@ -48,19 +41,15 @@ class Circle:
             return
         self.x += self.dx * multiplier
         self.y += self.dy * multiplier
-        # Отскок от левой стены
         if self.x - self.radius < 0:
             self.x = self.radius
             self.dx = -self.dx
-        # Отскок от правой стены
         if self.x + self.radius > WIDTH:
             self.x = WIDTH - self.radius
             self.dx = -self.dx
-        # Отскок от верхней стены
         if self.y - self.radius < 0:
             self.y = self.radius
             self.dy = -self.dy
-        # Отскок от нижней стены
         if self.y + self.radius > HEIGHT:
             self.y = HEIGHT - self.radius
             self.dy = -self.dy
@@ -70,42 +59,38 @@ class Circle:
         if not self.is_popping:
             return False
         self.pop_progress += self.pop_speed
-        # Возвращает True когда анимация завершена
         return self.pop_progress >= 1
 
     def draw(self):
         # Отрисовка кружочка
         if not self.is_popping:
-            # Живой кружок с обводкой
             screen.draw.filled_circle((self.x, self.y), self.radius, self.color)
             screen.draw.circle((self.x, self.y), self.radius, (255, 255, 255))
             return
         # Лопающийся кружок уменьшается
-        current_radius = int(self.radius * (1 - self.pop_progress))
-        if current_radius < 1:
-            current_radius = 1
-        screen.draw.filled_circle((self.x, self.y), current_radius, self.color)
+        r = int(self.radius * (1 - self.pop_progress))
+        if r < 1:
+            r = 1
+        screen.draw.filled_circle((self.x, self.y), r, self.color)
 
     def is_clicked(self, pos):
         # Проверка клика по кружку
-        mouse_x, mouse_y = pos
-        distance = math.sqrt((self.x - mouse_x)**2 + (self.y - mouse_y)**2)
-        return distance <= self.radius
+        d = math.sqrt((self.x - pos[0])**2 + (self.y - pos[1])**2)
+        return d <= self.radius
 
 class Game:
-    # Основной класс игры
     def __init__(self):
         self.setup_game()
 
     def setup_game(self):
-        # Сброс игры в начальное состояние
+        # Сброс игры
         self.circles = []
         self.score = 0
         self.speed_multiplier = 1.0
         self.game_over = False
         # Создание начальных кружков
-        start_count = random.randint(MIN_CIRCLES, MAX_CIRCLES)
-        for _ in range(start_count):
+        count = random.randint(MIN_CIRCLES, MAX_CIRCLES)
+        for _ in range(count):
             self.circles.append(self.spawn_circle())
 
     def spawn_circle(self):
@@ -113,12 +98,11 @@ class Game:
         return Circle()
 
     def handle_click(self, pos):
-        # Обработка клика мыши
+        # Обработка клика
         if self.game_over:
             return
         for circle in self.circles:
             if circle.is_clicked(pos):
-                # Запуск анимации лопанья
                 circle.is_popping = True
                 self.score += 1
                 self.speed_multiplier = 1 + self.score * 0.1
@@ -128,88 +112,46 @@ class Game:
                 break
 
     def update(self):
-        # Обновление игрового состояния
+        # Обновление игры
         if self.game_over:
             return
-        # Обновление кружков и удаление лопнувших
         new_circles = []
-        popped_count = 0
-        for circle in self.circles:
-            if circle.update():
-                popped_count += 1
+        popped = 0
+        # Обновление всех кружков
+        for c in self.circles:
+            if c.update():
+                popped += 1
             else:
-                new_circles.append(circle)
+                new_circles.append(c)
         self.circles = new_circles
-        # Добавление новых кружков вместо лопнувших
-        circles_to_add = min(popped_count, MAX_TOTAL_CIRCLES - len(self.circles))
+        # Добавление новых кружков вместо лопнувших (не больше MAX_TOTAL_CIRCLES)
+        circles_to_add = min(popped, MAX_TOTAL_CIRCLES - len(self.circles))
         for _ in range(circles_to_add):
             self.circles.append(self.spawn_circle())
         # Движение всех кружков
-        for circle in self.circles:
-            circle.move(self.speed_multiplier)
+        for c in self.circles:
+            c.move(self.speed_multiplier)
 
     def draw(self):
         # Отрисовка игры
         screen.fill(BACKGROUND_COLOR)
         # Рисование кружков
-        for circle in self.circles:
-            circle.draw()
+        for c in self.circles:
+            c.draw()
         # Экран победы
         if self.game_over:
-            screen.draw.text(
-                'ПОБЕДА!',
-                center=(WIDTH // 2, HEIGHT // 2 - 40),
-                fontsize=72,
-                color=(255, 215, 0)
-            )
-            screen.draw.text(
-                f'Вы лопнули {self.score} кружков! Можете поесть!',
-                center=(WIDTH // 2, HEIGHT // 2 + 30),
-                fontsize=36,
-                color=TEXT_COLOR
-            )
-            screen.draw.text(
-                'Нажми R для новой игры',
-                center=(WIDTH // 2, HEIGHT // 2 + 80),
-                fontsize=28,
-                color=HINT_TEXT_COLOR
-            )
+            screen.draw.text('ПОБЕДА!', center=(WIDTH//2, HEIGHT//2 - 40), fontsize=72, color=(255, 215, 0))
+            screen.draw.text(f'Вы лопнули {self.score} кружков! БЕБРАААА!', center=(WIDTH//2, HEIGHT//2 + 30), fontsize=36, color=TEXT_COLOR)
+            screen.draw.text('Нажми R для новой игры', center=(WIDTH//2, HEIGHT//2 + 80), fontsize=28, color=HINT_TEXT_COLOR)
         # Интерфейс
-        screen.draw.text(
-            f'Счет: {self.score}/{MAX_SCORE}',
-            topleft=(20, 20),
-            fontsize=30,
-            color=TEXT_COLOR
-        )
-        screen.draw.text(
-            f'Скорость: x{self.speed_multiplier:.1f}',
-            topright=(WIDTH - 20, 20),
-            fontsize=30,
-            color=SECONDARY_TEXT_COLOR
-        )
-        screen.draw.text(
-            f'Шариков: {len(self.circles)}/{MAX_TOTAL_CIRCLES}',
-            midtop=(WIDTH // 2, 20),
-            fontsize=24,
-            color=HINT_TEXT_COLOR
-        )
-        screen.draw.text(
-            'Нажимай левой кнопкой мыши на шарики, чтобы лопать их',
-            center=(WIDTH // 2, HEIGHT - 40),
-            fontsize=24,
-            color=HINT_TEXT_COLOR
-        )
-        screen.draw.text(
-            'R - новая игра | ESC - выход',
-            center=(WIDTH // 2, HEIGHT - 15),
-            fontsize=20,
-            color=HELP_TEXT_COLOR
-        )
+        screen.draw.text(f'Счет: {self.score}/{MAX_SCORE}', topleft=(20, 20), fontsize=30, color=TEXT_COLOR)
+        screen.draw.text(f'Скорость: x{self.speed_multiplier:.1f}', topright=(WIDTH-20, 20), fontsize=30, color=SECONDARY_TEXT_COLOR)
+        screen.draw.text(f'Шариков: {len(self.circles)}/{MAX_TOTAL_CIRCLES}', midtop=(WIDTH//2, 20), fontsize=24, color=HINT_TEXT_COLOR)
+        screen.draw.text('Нажимай левой кнопкой мыши на шарики, чтобы лопать их', center=(WIDTH//2, HEIGHT-40), fontsize=24, color=HINT_TEXT_COLOR)
+        screen.draw.text('R - новая игра | ESC - выход', center=(WIDTH//2, HEIGHT-15), fontsize=20, color=HELP_TEXT_COLOR)
 
-# Создание объекта игры
 game = Game()
 
-# Хуки Pygame Zero
 def update():
     game.update()
 
@@ -226,5 +168,4 @@ def on_key_down(key):
     elif key == keys.ESCAPE:
         exit()
 
-# Запуск игры
 pgzrun.go()
