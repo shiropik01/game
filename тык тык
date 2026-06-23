@@ -14,6 +14,8 @@ MIN_SPEED = 1.0
 MAX_SPEED = 3.0
 MIN_CIRCLES = 3
 MAX_CIRCLES = 7
+MAX_TOTAL_CIRCLES = 50
+MAX_SCORE = 20
 
 class Circle:
     def __init__(self):
@@ -80,6 +82,7 @@ class Game:
         self.circles = []
         self.score = 0
         self.speed_multiplier = 1.0
+        self.game_over = False
         start_count = random.randint(MIN_CIRCLES, MAX_CIRCLES)
         for _ in range(start_count):
             self.circles.append(self.spawn_circle())
@@ -88,14 +91,20 @@ class Game:
         return Circle()
 
     def handle_click(self, pos):
+        if self.game_over:
+            return
         for circle in self.circles:
             if circle.is_clicked(pos):
                 circle.is_popping = True
                 self.score += 1
                 self.speed_multiplier = 1 + self.score * 0.1
+                if self.score >= MAX_SCORE:
+                    self.game_over = True
                 break
 
     def update(self):
+        if self.game_over:
+            return
         new_circles = []
         popped_count = 0
         for circle in self.circles:
@@ -104,7 +113,8 @@ class Game:
             else:
                 new_circles.append(circle)
         self.circles = new_circles
-        for _ in range(popped_count):
+        circles_to_add = min(popped_count, MAX_TOTAL_CIRCLES - len(self.circles))
+        for _ in range(circles_to_add):
             self.circles.append(self.spawn_circle())
         for circle in self.circles:
             circle.move(self.speed_multiplier)
@@ -113,8 +123,29 @@ class Game:
         screen.fill(BACKGROUND_COLOR)
         for circle in self.circles:
             circle.draw()
+        
+        if self.game_over:
+            screen.draw.text(
+                'ПОБЕДА!',
+                center=(WIDTH // 2, HEIGHT // 2 - 40),
+                fontsize=72,
+                color=(255, 215, 0)
+            )
+            screen.draw.text(
+                f'Вы лопнули {self.score} кружков! Можете поесть!',
+                center=(WIDTH // 2, HEIGHT // 2 + 30),
+                fontsize=36,
+                color=TEXT_COLOR
+            )
+            screen.draw.text(
+                'Нажми R для новой игры',
+                center=(WIDTH // 2, HEIGHT // 2 + 80),
+                fontsize=28,
+                color=HINT_TEXT_COLOR
+            )
+        
         screen.draw.text(
-            f'Счет: {self.score}',
+            f'Счет: {self.score}/{MAX_SCORE}',
             topleft=(20, 20),
             fontsize=30,
             color=TEXT_COLOR
@@ -124,6 +155,12 @@ class Game:
             topright=(WIDTH - 20, 20),
             fontsize=30,
             color=SECONDARY_TEXT_COLOR
+        )
+        screen.draw.text(
+            f'Шариков: {len(self.circles)}/{MAX_TOTAL_CIRCLES}',
+            midtop=(WIDTH // 2, 20),
+            fontsize=24,
+            color=HINT_TEXT_COLOR
         )
         screen.draw.text(
             'Нажимай левой кнопкой мыши на шарики, чтобы лопать их',
