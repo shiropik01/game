@@ -13,10 +13,11 @@ HINT_TEXT_COLOR = (180, 180, 200)
 HELP_TEXT_COLOR = (160, 160, 180)
 MIN_SPEED = 1.0
 MAX_SPEED = 3.0
-MIN_CIRCLES = 3
-MAX_CIRCLES = 7
+MIN_CIRCLES = 5
+MAX_CIRCLES = 10
 MAX_TOTAL_CIRCLES = 50  # Максимум кружков на экране
-MAX_SCORE = 20  # Победа после 20 лопнутых кружков
+MAX_SCORE = 25  # Победа после 25 лопнутых кружков
+
 
 class Circle:
     def __init__(self):
@@ -75,8 +76,9 @@ class Circle:
 
     def is_clicked(self, pos):
         # Проверка клика по кружку
-        d = math.sqrt((self.x - pos[0])**2 + (self.y - pos[1])**2)
+        d = math.sqrt((self.x - pos[0]) ** 2 + (self.y - pos[1]) ** 2)
         return d <= self.radius
+
 
 class Game:
     def __init__(self):
@@ -124,7 +126,7 @@ class Game:
             else:
                 new_circles.append(c)
         self.circles = new_circles
-        # Добавление новых кружков вместо лопнувших (не больше MAX_TOTAL_CIRCLES)
+        # Добавление новых кружков вместо лопнувших
         circles_to_add = min(popped, MAX_TOTAL_CIRCLES - len(self.circles))
         for _ in range(circles_to_add):
             self.circles.append(self.spawn_circle())
@@ -140,32 +142,37 @@ class Game:
             c.draw()
         # Экран победы
         if self.game_over:
-            screen.draw.text('ПОБЕДА!', center=(WIDTH//2, HEIGHT//2 - 40), fontsize=72, color=(255, 215, 0))
-            screen.draw.text(f'Вы лопнули {self.score} кружков! БЕБРАААА!', center=(WIDTH//2, HEIGHT//2 + 30), fontsize=36, color=TEXT_COLOR)
-            screen.draw.text('Нажми R для новой игры', center=(WIDTH//2, HEIGHT//2 + 80), fontsize=28, color=HINT_TEXT_COLOR)
+            screen.draw.text('ПОБЕДА!', center=(WIDTH // 2, HEIGHT // 2 - 40), fontsize=72, color=(255, 215, 0))
+            screen.draw.text(f'Вы лопнули {self.score} кружков! БЕБРАААА!', center=(WIDTH // 2, HEIGHT // 2 + 30),fontsize=36, color=TEXT_COLOR)
+            screen.draw.text('Нажми R для новой игры', center=(WIDTH // 2, HEIGHT // 2 + 80), fontsize=28,color=HINT_TEXT_COLOR)
         # Интерфейс
         screen.draw.text(f'Счет: {self.score}/{MAX_SCORE}', topleft=(20, 20), fontsize=30, color=TEXT_COLOR)
-        screen.draw.text(f'Скорость: x{self.speed_multiplier:.1f}', topright=(WIDTH-20, 20), fontsize=30, color=SECONDARY_TEXT_COLOR)
-        
-        screen.draw.text('Нажимай левой кнопкой мыши на шарики, чтобы лопать их', center=(WIDTH//2, HEIGHT-40), fontsize=24, color=HINT_TEXT_COLOR)
-        screen.draw.text('R - новая игра | ESC - выход', center=(WIDTH//2, HEIGHT-15), fontsize=20, color=HELP_TEXT_COLOR)
+        screen.draw.text(f'Скорость: x{self.speed_multiplier:.1f}', topright=(WIDTH - 20, 20), fontsize=30,color=SECONDARY_TEXT_COLOR)
+        screen.draw.text('Нажимай левой кнопкой мыши на шарики, чтобы лопать их', center=(WIDTH // 2, HEIGHT - 40),fontsize=24, color=HINT_TEXT_COLOR)
+        screen.draw.text('R - новая игра | ESC - выход', center=(WIDTH // 2, HEIGHT - 15), fontsize=20,color=HELP_TEXT_COLOR)
+
 
 game = Game()
+
 
 def update():
     game.update()
 
+
 def draw():
     game.draw()
+
 
 def on_mouse_down(pos, button):
     if button == mouse.LEFT:
         game.handle_click(pos)
+
 
 def on_key_down(key):
     if key == keys.R:
         game.setup_game()
     elif key == keys.ESCAPE:
         exit()
+
 
 pgzrun.go()
