@@ -146,7 +146,7 @@ class Game:
         # Интерфейс
         screen.draw.text(f'Счет: {self.score}/{MAX_SCORE}', topleft=(20, 20), fontsize=30, color=TEXT_COLOR)
         screen.draw.text(f'Скорость: x{self.speed_multiplier:.1f}', topright=(WIDTH-20, 20), fontsize=30, color=SECONDARY_TEXT_COLOR)
-        screen.draw.text(f'Шариков: {len(self.circles)}/{MAX_TOTAL_CIRCLES}', midtop=(WIDTH//2, 20), fontsize=24, color=HINT_TEXT_COLOR)
+        
         screen.draw.text('Нажимай левой кнопкой мыши на шарики, чтобы лопать их', center=(WIDTH//2, HEIGHT-40), fontsize=24, color=HINT_TEXT_COLOR)
         screen.draw.text('R - новая игра | ESC - выход', center=(WIDTH//2, HEIGHT-15), fontsize=20, color=HELP_TEXT_COLOR)
 
