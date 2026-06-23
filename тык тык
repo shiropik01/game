@@ -132,7 +132,7 @@ class Game:
                 color=(255, 215, 0)
             )
             screen.draw.text(
-                f'Вы лопнули {self.score} кружков! Можете поесть!',
+                f'Вы лопнули {self.score} кружков! Победа есть можно поесть!!!',
                 center=(WIDTH // 2, HEIGHT // 2 + 30),
                 fontsize=36,
                 color=TEXT_COLOR
